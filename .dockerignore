@@ -1,0 +1,16 @@
+# Node.js dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# Build artifacts
+dist/
+build/
+
+# Personal docs
+personal_docs/

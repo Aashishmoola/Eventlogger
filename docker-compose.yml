@@ -1,0 +1,46 @@
+
+services:
+  # Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: eventlogger-rabbitmq
+    ports:
+      - "5672:5672" # For connection with RabbitMQ Container (Logging, Debugging)
+      - "15672:15672" # For Web View of RabbitMQ Container 
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eventlogger-network
+
+  # REST API Service
+  api:
+    build: ./api
+    container_name: eventlogger-api
+    ports:
+      - "${API_PORT:-3000}:${API_PORT:-3000}" #To Post Events
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - eventlogger-network
+
+  # Consumer Service
+  consumer:
+    build: ./consumer
+    container_name: eventlogger-consumer
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - eventlogger-network
+
+networks:
+  eventlogger-network:
+    driver: bridge
